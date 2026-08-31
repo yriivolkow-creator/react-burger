@@ -28,7 +28,7 @@ export const BurgerConstructor = ({
         .filter(
           (ingredient) => ingredient.type === 'main' || ingredient.type === 'sauce'
         )
-        .slice(0, 7),
+        .slice(0, 6),
     [ingredients]
   );
 
@@ -49,15 +49,13 @@ export const BurgerConstructor = ({
     <section className={`${styles.burger_constructor} pt-25`}>
       <section className={styles.elements} aria-label="Состав бургера">
         {bun && (
-          <div className={`${styles.bun} ml-6`}>
-            <ConstructorElement
-              type="top"
-              text={bun.name}
-              thumbnail={bun.image}
-              price={bun.price}
-              isLocked
-            />
-          </div>
+          <ConstructorElement
+            type="top"
+            text={bun.name}
+            thumbnail={bun.image}
+            price={bun.price}
+            isLocked
+          />
         )}
 
         <ul className={`${styles.fillings} custom-scroll`}>
@@ -75,15 +73,13 @@ export const BurgerConstructor = ({
         </ul>
 
         {bun && (
-          <div className={`${styles.bun} ml-6`}>
-            <ConstructorElement
-              type="bottom"
-              text={bun.name}
-              thumbnail={bun.image}
-              price={bun.price}
-              isLocked
-            />
-          </div>
+          <ConstructorElement
+            type="bottom"
+            text={bun.name}
+            thumbnail={bun.image}
+            price={bun.price}
+            isLocked
+          />
         )}
       </section>
 
