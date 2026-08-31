@@ -2,6 +2,69 @@
   display: flex;
   flex-direction: column;
   width: 600px;
-  padding-bottom: 20px;
+  min-width: 0;
+  min-height: 0;
   color: var(--text-primary-color);
+}
+
+.elements {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+
+}
+
+.bun {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+/* В UI-ките у .constructor-element стоит flex-grow: 1 — булки не должны растягиваться */
+.bun :global(.constructor-element) {
+  flex-grow: 0;
+}
+
+.fillings {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0 16px 0 0;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.fillings_item {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 40px;
+  padding-right: 16px;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-right: 40px;
+}
+
+@media (max-width: 800px) {
+  .burger_constructor {
+    width: 100%;
+    max-width: 600px;
+  }
 }

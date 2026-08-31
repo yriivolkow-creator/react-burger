@@ -1,9 +1,16 @@
 .burger_ingredients {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   max-width: 600px;
   color: var(--text-primary-color);
   font-family: 'Jet Brains Mono', serif;
+}
+
+.title {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .menu {
@@ -13,3 +20,64 @@
   text-align: center;
   list-style-type: none;
 }
+
+.ingredients {
+  /* max-height: calc(100vh - 280px); */
+  margin-top: 24px;
+  padding-right: 16px;
+  overflow-y: auto;
+}
+
+.group_title {
+  margin: 0 0 24px;
+}
+
+.ingredients_list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 24px;
+  margin: 0;
+  padding: 0 16px 40px;
+  list-style: none;
+}
+
+.ingredient_card {
+  min-width: 0;
+  text-align: center;
+}
+
+.image_wrapper {
+  position: relative;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  margin: 0 auto;
+}
+
+.counter {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.name {
+  min-height: 48px;
+  margin: 8px 0 0;
+}
+/* 
+@media (max-width: 800px) {
+  .ingredients_list {
+    grid-template-columns: 1fr;
+  }
+} */
