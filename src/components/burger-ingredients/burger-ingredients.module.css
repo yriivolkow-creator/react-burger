@@ -46,6 +46,16 @@
   text-align: center;
 }
 
+.ingredient_button {
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  text-align: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 .image_wrapper {
   position: relative;
 }
@@ -65,8 +75,8 @@
 
 .price {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 8px;
   margin: 8px 0 0;
 }
@@ -75,9 +85,3 @@
   min-height: 48px;
   margin: 8px 0 0;
 }
-/* 
-@media (max-width: 800px) {
-  .ingredients_list {
-    grid-template-columns: 1fr;
-  }
-} */

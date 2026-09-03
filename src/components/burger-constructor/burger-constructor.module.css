@@ -14,12 +14,9 @@
   gap: 16px;
   min-width: 0;
   min-height: 0;
-
 }
 
-/* В UI-ките у .constructor-element стоит flex-grow: 1 — булки не должны растягиваться */
-.elements > :global(.constructor-element_pos_top),
-.elements > :global(.constructor-element_pos_bottom) {
+.bun {
   flex-grow: 0;
   flex-shrink: 0;
   margin-left: calc(var(--offset-base-size) * 6);
@@ -30,25 +27,25 @@
   flex: 1;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
   margin: 0;
   padding: 0 16px 0 0;
-  min-height: 0;
   overflow-y: auto;
   list-style: none;
 }
 
 .fillings_item {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   margin: 0;
-  flex-shrink: 0;
 }
 
 .footer {
   display: flex;
   flex-shrink: 0;
-  align-items: center;
   justify-content: flex-end;
+  align-items: center;
   margin-top: 40px;
   padding-right: 16px;
 }
@@ -60,7 +57,7 @@
   margin-right: 40px;
 }
 
-@media (max-width: 800px) {
+@media (width <= 800px) {
   .burger_constructor {
     width: 100%;
     max-width: 600px;

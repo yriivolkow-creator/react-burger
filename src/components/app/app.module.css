@@ -1,11 +1,12 @@
 .app {
   display: flex;
   flex-direction: column;
+
   /* height: 100vh; */
   height: 100%;
+  padding-bottom: 40px;
   color: var(--text-primary-color);
   background-color: var(--background-alt);
-  padding-bottom: 40px;
 }
 
 .main {

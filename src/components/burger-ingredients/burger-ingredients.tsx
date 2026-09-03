@@ -1,6 +1,9 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
 import { useRef, useState } from 'react';
 
+import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
+import { Modal } from '@components/modal/modal';
+
 import type { TIngredient, TIngredientType } from '@utils/types';
 
 import styles from './burger-ingredients.module.css';
@@ -24,6 +27,9 @@ export const BurgerIngredients = ({
   ingredients,
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState<TIngredientType>('bun');
+  const [selectedIngredient, setSelectedIngredient] = useState<TIngredient | null>(
+    null
+  );
   const sectionRefs = useRef<Record<TIngredientType, HTMLElement | null>>({
     bun: null,
     sauce: null,
@@ -45,6 +51,14 @@ export const BurgerIngredients = ({
       behavior: 'smooth',
       block: 'start',
     });
+  };
+
+  const handleIngredientClick = (ingredient: TIngredient): void => {
+    setSelectedIngredient(ingredient);
+  };
+
+  const handleModalClose = (): void => {
+    setSelectedIngredient(null);
   };
 
   return (
@@ -93,7 +107,11 @@ export const BurgerIngredients = ({
               <ul className={styles.ingredients_list}>
                 {groupIngredients.map((ingredient) => (
                   <li key={ingredient._id} className={styles.ingredient_card}>
-                    <article>
+                    <button
+                      type="button"
+                      className={styles.ingredient_button}
+                      onClick={() => handleIngredientClick(ingredient)}
+                    >
                       <div className={styles.image_wrapper}>
                         <img
                           className={styles.image}
@@ -111,7 +129,7 @@ export const BurgerIngredients = ({
                       <p className={`${styles.name} text text_type_main-default`}>
                         {ingredient.name}
                       </p>
-                    </article>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -119,6 +137,12 @@ export const BurgerIngredients = ({
           );
         })}
       </div>
+
+      {selectedIngredient && (
+        <Modal title="Детали ингредиента" onClose={handleModalClose}>
+          <IngredientDetails ingredient={selectedIngredient} />
+        </Modal>
+      )}
     </section>
   );
 };

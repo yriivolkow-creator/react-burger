@@ -4,7 +4,10 @@ import {
   CurrencyIcon,
   DragIcon,
 } from '@krgaa/react-developer-burger-ui-components';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
+import { Modal } from '@components/modal/modal';
+import { OrderDetails } from '@components/order-details/order-details';
 
 import type { TIngredient } from '@utils/types';
 
@@ -17,6 +20,8 @@ type TBurgerConstructorProps = {
 export const BurgerConstructor = ({
   ingredients,
 }: TBurgerConstructorProps): React.JSX.Element => {
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
   const bun = useMemo(
     () => ingredients.find((ingredient) => ingredient.type === 'bun'),
     [ingredients]
@@ -55,6 +60,7 @@ export const BurgerConstructor = ({
             thumbnail={bun.image}
             price={bun.price}
             isLocked
+            extraClass={styles.bun}
           />
         )}
 
@@ -66,7 +72,9 @@ export const BurgerConstructor = ({
                 text={ingredient.name}
                 thumbnail={ingredient.image}
                 price={ingredient.price}
-                handleClose={() => {}}
+                handleClose={() => {
+                  // Удаление ингредиента
+                }}
               />
             </li>
           ))}
@@ -79,6 +87,7 @@ export const BurgerConstructor = ({
             thumbnail={bun.image}
             price={bun.price}
             isLocked
+            extraClass={styles.bun}
           />
         )}
       </section>
@@ -88,10 +97,21 @@ export const BurgerConstructor = ({
           {totalPrice}
           <CurrencyIcon type="primary" />
         </p>
-        <Button type="primary" size="large" htmlType="button">
+        <Button
+          type="primary"
+          size="large"
+          htmlType="button"
+          onClick={() => setIsOrderModalOpen(true)}
+        >
           Оформить заказ
         </Button>
       </footer>
+
+      {isOrderModalOpen && (
+        <Modal onClose={() => setIsOrderModalOpen(false)}>
+          <OrderDetails />
+        </Modal>
+      )}
     </section>
   );
 };
