@@ -16,3 +16,8 @@
   margin: 0 auto;
   overflow: hidden;
 }
+
+.error {
+  margin: auto;
+  color: var(--colors-interface-error);
+}

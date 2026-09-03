@@ -1,15 +1,10 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
 import { useRef, useState } from 'react';
 
-import type { TIngredient } from '@utils/types';
+import type { TIngredient, TIngredientType } from '@utils/types';
 
 import styles from './burger-ingredients.module.css';
 
-// типизация
-type TBurgerIngredientsProps = {
-  ingredients: TIngredient[];
-};
-type TIngredientType = 'bun' | 'sauce' | 'main';
 type TIngredientGroup = {
   title: string;
   type: TIngredientType;
@@ -20,6 +15,10 @@ const ingredientGroups: TIngredientGroup[] = [
   { title: 'Соусы', type: 'sauce' },
   { title: 'Начинки', type: 'main' },
 ];
+
+type TBurgerIngredientsProps = {
+  ingredients: TIngredient[];
+};
 
 export const BurgerIngredients = ({
   ingredients,
