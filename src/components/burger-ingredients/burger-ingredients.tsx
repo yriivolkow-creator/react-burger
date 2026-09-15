@@ -1,8 +1,18 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
 import { useRef, useState } from 'react';
+import { useDrag } from 'react-dnd';
 
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
+import { selectIngredientCountsById } from '@services/burger-constructor/burgerConstructorSlice';
+import { useAppDispatch, useAppSelector } from '@services/hooks';
+import { selectAllIngredients } from '@services/ingredients/ingredientsSlice';
+import {
+  clearSelectedIngredient,
+  selectIngredient,
+  selectSelectedIngredient,
+} from '@services/selected-ingredient/selectedIngredientSlice';
+import { DND_ITEM_TYPES, type TIngredientDragItem } from '@utils/dnd';
 
 import type { TIngredient, TIngredientType } from '@utils/types';
 
@@ -13,31 +23,79 @@ type TIngredientGroup = {
   type: TIngredientType;
 };
 
+type TIngredientCardProps = {
+  count: number;
+  ingredient: TIngredient;
+  onClick: (ingredient: TIngredient) => void;
+};
+
 const ingredientGroups: TIngredientGroup[] = [
   { title: 'Булки', type: 'bun' },
   { title: 'Соусы', type: 'sauce' },
   { title: 'Начинки', type: 'main' },
 ];
 
-type TBurgerIngredientsProps = {
-  ingredients: TIngredient[];
+const IngredientCard = ({
+  count,
+  ingredient,
+  onClick,
+}: TIngredientCardProps): React.JSX.Element => {
+  const [{ isDragging }, dragRef] = useDrag<
+    TIngredientDragItem,
+    unknown,
+    { isDragging: boolean }
+  >(
+    () => ({
+      collect: (monitor): { isDragging: boolean } => ({
+        isDragging: monitor.isDragging(),
+      }),
+      item: (): TIngredientDragItem => ({
+        ingredient,
+        type: DND_ITEM_TYPES.ingredient,
+      }),
+      type: DND_ITEM_TYPES.ingredient,
+    }),
+    [ingredient]
+  );
+
+  return (
+    <li
+      ref={(element) => {
+        dragRef(element);
+      }}
+      className={`${styles.ingredient_card} ${isDragging ? styles.dragging : ''}`}
+    >
+      <button
+        type="button"
+        className={styles.ingredient_button}
+        onClick={() => onClick(ingredient)}
+      >
+        <div className={styles.image_wrapper}>
+          <img className={styles.image} src={ingredient.image} alt={ingredient.name} />
+          {count > 0 && <Counter count={count} extraClass={styles.counter} />}
+        </div>
+        <p className={`${styles.price} text text_type_digits-default`}>
+          {ingredient.price}
+          <CurrencyIcon type="primary" />
+        </p>
+        <p className={`${styles.name} text text_type_main-default`}>{ingredient.name}</p>
+      </button>
+    </li>
+  );
 };
 
-export const BurgerIngredients = ({
-  ingredients,
-}: TBurgerIngredientsProps): React.JSX.Element => {
+export const BurgerIngredients = (): React.JSX.Element => {
+  const dispatch = useAppDispatch();
+  const ingredients = useAppSelector(selectAllIngredients);
+  const ingredientCountsById = useAppSelector(selectIngredientCountsById);
+  const selectedIngredient = useAppSelector(selectSelectedIngredient);
   const [activeTab, setActiveTab] = useState<TIngredientType>('bun');
-  const [selectedIngredient, setSelectedIngredient] = useState<TIngredient | null>(
-    null
-  );
-  const sectionRefs = useRef<Record<TIngredientType, HTMLElement | null>>({
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const headingRefs = useRef<Record<TIngredientType, HTMLHeadingElement | null>>({
     bun: null,
     sauce: null,
     main: null,
   });
-  const displayedIngredients = ingredientGroups
-    .flatMap(({ type }) => ingredients.filter((ingredient) => ingredient.type === type))
-    .slice(0, 8);
 
   const handleTabClick = (value: string): void => {
     const selectedGroup = ingredientGroups.find((group) => group.type === value);
@@ -47,18 +105,64 @@ export const BurgerIngredients = ({
     }
 
     setActiveTab(selectedGroup.type);
-    sectionRefs.current[selectedGroup.type]?.scrollIntoView({
+
+    const container = containerRef.current;
+    const heading = headingRefs.current[selectedGroup.type];
+
+    if (!container || !heading) {
+      return;
+    }
+
+    const scrollOptions: ScrollToOptions = {
       behavior: 'smooth',
-      block: 'start',
-    });
+      top: heading.offsetTop - container.offsetTop,
+    };
+
+    if (typeof container.scrollTo === 'function') {
+      container.scrollTo(scrollOptions);
+      return;
+    }
+
+    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleScroll = (): void => {
+    const container = containerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const containerTop = container.getBoundingClientRect().top;
+    let nearestType: TIngredientType | null = null;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+
+    for (const group of ingredientGroups) {
+      const heading = headingRefs.current[group.type];
+
+      if (!heading) {
+        continue;
+      }
+
+      const distance = Math.abs(heading.getBoundingClientRect().top - containerTop);
+
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestType = group.type;
+      }
+    }
+
+    if (nearestType) {
+      setActiveTab(nearestType);
+    }
   };
 
   const handleIngredientClick = (ingredient: TIngredient): void => {
-    setSelectedIngredient(ingredient);
+    dispatch(selectIngredient(ingredient));
   };
 
   const handleModalClose = (): void => {
-    setSelectedIngredient(null);
+    dispatch(clearSelectedIngredient());
   };
 
   return (
@@ -80,57 +184,35 @@ export const BurgerIngredients = ({
         </ul>
       </nav>
 
-      <div className={`${styles.ingredients} custom-scroll`}>
+      <div
+        ref={containerRef}
+        className={`${styles.ingredients} custom-scroll`}
+        onScroll={handleScroll}
+      >
         {ingredientGroups.map((group) => {
-          const groupIngredients = displayedIngredients.filter(
+          const groupIngredients = ingredients.filter(
             (ingredient) => ingredient.type === group.type
           );
 
-          if (groupIngredients.length === 0) {
-            return null;
-          }
-
           return (
-            <section
-              key={group.type}
-              ref={(section) => {
-                sectionRefs.current[group.type] = section;
-              }}
-              aria-labelledby={`${group.type}-title`}
-            >
+            <section key={group.type} aria-labelledby={`${group.type}-title`}>
               <h2
                 id={`${group.type}-title`}
+                ref={(heading) => {
+                  headingRefs.current[group.type] = heading;
+                }}
                 className={`${styles.group_title} text text_type_main-medium`}
               >
                 {group.title}
               </h2>
               <ul className={styles.ingredients_list}>
                 {groupIngredients.map((ingredient) => (
-                  <li key={ingredient._id} className={styles.ingredient_card}>
-                    <button
-                      type="button"
-                      className={styles.ingredient_button}
-                      onClick={() => handleIngredientClick(ingredient)}
-                    >
-                      <div className={styles.image_wrapper}>
-                        <img
-                          className={styles.image}
-                          src={ingredient.image}
-                          alt={ingredient.name}
-                        />
-                        {ingredient._id === displayedIngredients[0]?._id && (
-                          <Counter count={1} extraClass={styles.counter} />
-                        )}
-                      </div>
-                      <p className={`${styles.price} text text_type_digits-default`}>
-                        {ingredient.price}
-                        <CurrencyIcon type="primary" />
-                      </p>
-                      <p className={`${styles.name} text text_type_main-default`}>
-                        {ingredient.name}
-                      </p>
-                    </button>
-                  </li>
+                  <IngredientCard
+                    key={ingredient._id}
+                    count={ingredientCountsById[ingredient._id] ?? 0}
+                    ingredient={ingredient}
+                    onClick={handleIngredientClick}
+                  />
                 ))}
               </ul>
             </section>

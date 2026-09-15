@@ -1,8 +1,10 @@
 .burger_ingredients {
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
   max-width: 600px;
+  min-height: 0;
   color: var(--text-primary-color);
   font-family: 'Jet Brains Mono', serif;
 }
@@ -22,7 +24,9 @@
 }
 
 .ingredients {
-  /* max-height: calc(100vh - 280px); */
+  flex: 1;
+  min-height: 0;
+  max-height: calc(100vh - 280px);
   margin-top: 24px;
   padding-right: 16px;
   overflow-y: auto;
@@ -44,6 +48,10 @@
 .ingredient_card {
   min-width: 0;
   text-align: center;
+}
+
+.dragging {
+  opacity: 0.5;
 }
 
 .ingredient_button {

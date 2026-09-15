@@ -17,7 +17,7 @@ type TModalProps = {
 const modalRoot = document.getElementById('modals');
 
 export const Modal = ({ title, onClose, children }: TModalProps): React.JSX.Element => {
-  useEffect(() => {
+  useEffect((): (() => void) => {
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         onClose();
