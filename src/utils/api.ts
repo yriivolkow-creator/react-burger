@@ -1,3 +1,4 @@
+import { checkResponse } from '@utils/check-response';
 import { BASE_API_URL } from '@utils/constants';
 
 import type { TCreateOrderRequest, TIngredient, TIngredientType } from '@utils/types';
@@ -64,13 +65,8 @@ const normalizeIngredient = (value: unknown): TIngredient => {
   };
 };
 
-const readJson = async (response: Response): Promise<unknown> => {
-  try {
-    return await response.json();
-  } catch {
-    throw new Error('Сервер вернул некорректный JSON');
-  }
-};
+const request = (endpoint: string, options?: RequestInit): Promise<unknown> =>
+  fetch(`${BASE_API_URL}${endpoint}`, options).then(checkResponse);
 
 const requireSuccessfulResponse = (
   payload: unknown,
@@ -84,14 +80,8 @@ const requireSuccessfulResponse = (
 };
 
 export const getIngredients = async (signal?: AbortSignal): Promise<TIngredient[]> => {
-  const response = await fetch(`${BASE_API_URL}/ingredients`, { signal });
-
-  if (!response.ok) {
-    throw new Error(`Не удалось загрузить ингредиенты: HTTP ${response.status}`);
-  }
-
   const result = requireSuccessfulResponse(
-    await readJson(response),
+    await request('/ingredients', { signal }),
     'Сервер сообщил об ошибке загрузки ингредиентов'
   );
 
@@ -106,19 +96,13 @@ export const createOrder = async (
   payload: TCreateOrderRequest,
   signal?: AbortSignal
 ): Promise<number> => {
-  const response = await fetch(`${BASE_API_URL}/orders`, {
-    body: JSON.stringify(payload),
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Не удалось создать заказ: HTTP ${response.status}`);
-  }
-
   const result = requireSuccessfulResponse(
-    await readJson(response),
+    await request('/orders', {
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      signal,
+    }),
     'Сервер сообщил об ошибке создания заказа'
   );
 

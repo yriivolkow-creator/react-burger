@@ -27,6 +27,10 @@ export const burgerConstructorSlice = createSlice({
         state.bun = action.payload;
       }
     },
+    clearConstructor: (): TBurgerConstructorState => ({
+      bun: null,
+      ingredients: [],
+    }),
     addIngredient: {
       prepare: (ingredient: TIngredient): { payload: TConstructorIngredient } => ({
         payload: { ...ingredient, id: nanoid() },
@@ -64,8 +68,13 @@ export const burgerConstructorSlice = createSlice({
   },
 });
 
-export const { addIngredient, moveIngredient, removeIngredient, setBun } =
-  burgerConstructorSlice.actions;
+export const {
+  addIngredient,
+  clearConstructor,
+  moveIngredient,
+  removeIngredient,
+  setBun,
+} = burgerConstructorSlice.actions;
 
 export const selectBurgerConstructorState = (
   state: RootState

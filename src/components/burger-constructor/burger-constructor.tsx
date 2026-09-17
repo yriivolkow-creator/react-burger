@@ -11,6 +11,7 @@ import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
 import {
   addIngredient,
+  clearConstructor,
   moveIngredient,
   removeIngredient,
   selectCanSubmitOrder,
@@ -97,7 +98,7 @@ const BunSlot = ({ bun, position }: TBunSlotProps): React.JSX.Element => {
       {bun ? (
         <ConstructorElement
           type={position}
-          text={bun.name}
+          text={`${bun.name} (${position === 'top' ? 'верх' : 'низ'})`}
           thumbnail={bun.image}
           price={bun.price}
           isLocked
@@ -265,6 +266,10 @@ export const BurgerConstructor = (): React.JSX.Element => {
   };
 
   const handleOrderModalClose = (): void => {
+    if (orderStatus === 'succeeded' && orderNumber !== null) {
+      dispatch(clearConstructor());
+    }
+
     dispatch(closeOrderModal());
   };
 
