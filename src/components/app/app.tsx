@@ -1,62 +1,45 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
 import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredients';
-import { getIngredients } from '@utils/api';
-
-import type { TIngredient } from '@utils/types';
+import { useAppDispatch, useAppSelector } from '@services/hooks';
+import {
+  selectIngredientsError,
+  selectIngredientsStatus,
+} from '@services/ingredients/ingredientsSlice';
+import { fetchIngredients } from '@services/ingredients/ingredientsThunks';
 
 import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
-  const [ingredients, setIngredients] = useState<TIngredient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const error = useAppSelector(selectIngredientsError);
+  const status = useAppSelector(selectIngredientsStatus);
 
-  useEffect(() => {
-    // убрал 2й апи запрос при дев разработке
-    const abortController = new AbortController();
-
-    const loadIngredients = async (): Promise<void> => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const data = await getIngredients(abortController.signal);
-        setIngredients(data);
-      } catch (err) {
-        if (abortController.signal.aborted) {
-          return;
-        }
-
-        const message =
-          err instanceof Error ? err.message : 'Произошла ошибка при загрузке данных';
-
-        setError(message);
-      } finally {
-        if (!abortController.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void loadIngredients();
+  useEffect((): (() => void) => {
+    const request = dispatch(fetchIngredients());
 
     return () => {
-      abortController.abort();
+      request.abort();
     };
-  }, []);
+  }, [dispatch]);
 
-  if (isLoading) {
-    return <Preloader />;
+  if (status === 'idle' || status === 'pending') {
+    return (
+      <div aria-label="Загрузка ингредиентов" role="status">
+        <Preloader />
+      </div>
+    );
   }
 
-  if (error) {
+  if (status === 'failed') {
     return (
       <div className={styles.app}>
-        <p className={`${styles.error} text text_type_main-default`}>{error}</p>
+        <p className={`${styles.error} text text_type_main-default`} role="alert">
+          {error ?? 'Не удалось загрузить ингредиенты'}
+        </p>
       </div>
     );
   }
@@ -65,8 +48,8 @@ export const App = (): React.JSX.Element => {
     <div className={styles.app}>
       <AppHeader />
       <main className={`${styles.main} pl-5 pr-5`}>
-        <BurgerIngredients ingredients={ingredients} />
-        <BurgerConstructor ingredients={ingredients} />
+        <BurgerIngredients />
+        <BurgerConstructor />
       </main>
     </div>
   );

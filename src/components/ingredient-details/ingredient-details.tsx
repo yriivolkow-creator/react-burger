@@ -23,11 +23,7 @@ export const IngredientDetails = ({
 
   return (
     <article className={`${styles.details} pb-15`}>
-      <img
-        className={styles.image}
-        src={ingredient.image_large}
-        alt={ingredient.name}
-      />
+      <img className={styles.image} src={ingredient.image_large} alt={ingredient.name} />
       <h3 className={`${styles.name} text text_type_main-medium mt-4 mb-8`}>
         {ingredient.name}
       </h3>
