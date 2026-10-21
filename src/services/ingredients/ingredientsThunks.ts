@@ -2,6 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { getIngredients } from '@utils/api';
 
+import type { RootState } from '@services/store';
 import type { TIngredient } from '@utils/types';
 
 const getErrorMessage = (error: unknown, fallback: string): string =>
@@ -10,17 +11,23 @@ const getErrorMessage = (error: unknown, fallback: string): string =>
 export const fetchIngredients = createAsyncThunk<
   TIngredient[],
   void,
-  { rejectValue: string }
->('ingredients/fetchIngredients', async (_, thunkAPI) => {
-  try {
-    return await getIngredients(thunkAPI.signal);
-  } catch (error) {
-    if (thunkAPI.signal.aborted) {
-      throw error;
-    }
+  { rejectValue: string; state: RootState }
+>(
+  'ingredients/fetchIngredients',
+  async (_, thunkAPI) => {
+    try {
+      return await getIngredients(thunkAPI.signal);
+    } catch (error) {
+      if (thunkAPI.signal.aborted) {
+        throw error;
+      }
 
-    return thunkAPI.rejectWithValue(
-      getErrorMessage(error, 'Не удалось загрузить ингредиенты')
-    );
+      return thunkAPI.rejectWithValue(
+        getErrorMessage(error, 'Не удалось загрузить ингредиенты')
+      );
+    }
+  },
+  {
+    condition: (_, { getState }): boolean => getState().ingredients.status === 'idle',
   }
-});
+);
