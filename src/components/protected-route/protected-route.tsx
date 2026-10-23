@@ -8,10 +8,18 @@ type TProtectedRouteProps = {
   onlyUnauth?: boolean;
 };
 
+type TLocationState = {
+  from?: {
+    pathname: string;
+  };
+};
+
 export const ProtectedRoute = ({
   onlyUnauth = false,
 }: TProtectedRouteProps): React.JSX.Element => {
   const location = useLocation();
+  const loginRedirectPath =
+    (location.state as TLocationState | null)?.from?.pathname ?? '/';
   const isAuthChecked = useAppSelector(selectIsAuthChecked);
   const user = useAppSelector(selectCurrentUser);
 
@@ -24,7 +32,7 @@ export const ProtectedRoute = ({
   }
 
   if (onlyUnauth && user) {
-    return <Navigate replace to="/" />;
+    return <Navigate replace to={loginRedirectPath} />;
   }
 
   if (!onlyUnauth && !user) {

@@ -3,10 +3,10 @@ import {
   Input,
   PasswordInput,
 } from '@krgaa/react-developer-burger-ui-components';
-import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { AuthForm } from '@components/auth-form/auth-form';
+import { useForm } from '@hooks/use-form';
 import { selectAuthError, selectAuthStatus } from '@services/auth/authSlice';
 import {
   forgotPassword,
@@ -24,6 +24,22 @@ type TLocationState = {
   from?: Location;
 };
 
+type TLoginForm = {
+  email: string;
+  password: string;
+};
+
+type TRegisterForm = TLoginForm & {
+  name: string;
+};
+
+type TForgotPasswordForm = Pick<TLoginForm, 'email'>;
+
+type TResetPasswordForm = {
+  password: string;
+  token: string;
+};
+
 const isPending = (status: string): boolean => status === 'pending';
 
 export const LoginPage = (): React.JSX.Element => {
@@ -32,19 +48,21 @@ export const LoginPage = (): React.JSX.Element => {
   const status = useAppSelector(selectAuthStatus);
   const location = useLocation();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { handleChange, values } = useForm<TLoginForm>({
+    email: '',
+    password: '',
+  });
   const from = (location.state as TLocationState | null)?.from?.pathname ?? '/';
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    try {
-      await dispatch(loginUser({ email, password })).unwrap();
-      void navigate(from, { replace: true });
-    } catch {
-      return;
-    }
+    void dispatch(loginUser(values))
+      .unwrap()
+      .then(() => {
+        void navigate(from, { replace: true });
+      })
+      .catch(() => undefined);
   };
 
   return (
@@ -67,16 +85,17 @@ export const LoginPage = (): React.JSX.Element => {
         </>
       }
       isSubmitting={isPending(status)}
-      onSubmit={(event) => void handleSubmit(event)}
+      onSubmit={handleSubmit}
       submitLabel="Войти"
       title="Вход"
     >
-      <EmailInput value={email} onChange={(event) => setEmail(event.target.value)} />
+      <EmailInput name="email" onChange={handleChange} value={values.email} />
       <PasswordInput
         icon="ShowIcon"
-        onChange={(event) => setPassword(event.target.value)}
+        name="password"
+        onChange={handleChange}
         placeholder="Пароль"
-        value={password}
+        value={values.password}
       />
     </AuthForm>
   );
@@ -86,18 +105,17 @@ export const RegisterPage = (): React.JSX.Element => {
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectAuthError);
   const status = useAppSelector(selectAuthStatus);
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
+  const { handleChange, values } = useForm<TRegisterForm>({
+    email: '',
+    name: '',
+    password: '',
+  });
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-
-    try {
-      await dispatch(registerUser({ email, name, password })).unwrap();
-    } catch {
-      return;
-    }
+    void dispatch(registerUser(values))
+      .unwrap()
+      .catch(() => undefined);
   };
 
   return (
@@ -112,23 +130,25 @@ export const RegisterPage = (): React.JSX.Element => {
         </p>
       }
       isSubmitting={isPending(status)}
-      onSubmit={(event) => void handleSubmit(event)}
+      onSubmit={handleSubmit}
       submitLabel="Зарегистрироваться"
       title="Регистрация"
     >
       <Input
         icon="EditIcon"
-        onChange={(event) => setName(event.target.value)}
+        name="name"
+        onChange={handleChange}
         placeholder="Имя"
         type="text"
-        value={name}
+        value={values.name}
       />
-      <EmailInput value={email} onChange={(event) => setEmail(event.target.value)} />
+      <EmailInput name="email" onChange={handleChange} value={values.email} />
       <PasswordInput
         icon="ShowIcon"
-        onChange={(event) => setPassword(event.target.value)}
+        name="password"
+        onChange={handleChange}
         placeholder="Пароль"
-        value={password}
+        value={values.password}
       />
     </AuthForm>
   );
@@ -139,18 +159,18 @@ export const ForgotPasswordPage = (): React.JSX.Element => {
   const error = useAppSelector(selectAuthError);
   const status = useAppSelector(selectAuthStatus);
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const { handleChange, values } = useForm<TForgotPasswordForm>({ email: '' });
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    try {
-      await dispatch(forgotPassword({ email })).unwrap();
-      markPasswordResetRequested();
-      void navigate('/reset-password', { replace: true });
-    } catch {
-      return;
-    }
+    void dispatch(forgotPassword(values))
+      .unwrap()
+      .then(() => {
+        markPasswordResetRequested();
+        void navigate('/reset-password', { replace: true });
+      })
+      .catch(() => undefined);
   };
 
   return (
@@ -165,14 +185,15 @@ export const ForgotPasswordPage = (): React.JSX.Element => {
         </p>
       }
       isSubmitting={isPending(status)}
-      onSubmit={(event) => void handleSubmit(event)}
+      onSubmit={handleSubmit}
       submitLabel="Восстановить"
       title="Восстановление пароля"
     >
       <EmailInput
-        onChange={(event) => setEmail(event.target.value)}
+        name="email"
+        onChange={handleChange}
         placeholder="Укажите e-mail"
-        value={email}
+        value={values.email}
       />
     </AuthForm>
   );
@@ -183,19 +204,21 @@ export const ResetPasswordPage = (): React.JSX.Element => {
   const error = useAppSelector(selectAuthError);
   const status = useAppSelector(selectAuthStatus);
   const navigate = useNavigate();
-  const [password, setPassword] = useState('');
-  const [token, setToken] = useState('');
+  const { handleChange, values } = useForm<TResetPasswordForm>({
+    password: '',
+    token: '',
+  });
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    try {
-      await dispatch(resetPassword({ password, token })).unwrap();
-      clearPasswordResetRequest();
-      void navigate('/login', { replace: true });
-    } catch {
-      return;
-    }
+    void dispatch(resetPassword(values))
+      .unwrap()
+      .then(() => {
+        clearPasswordResetRequest();
+        void navigate('/login', { replace: true });
+      })
+      .catch(() => undefined);
   };
 
   return (
@@ -210,21 +233,23 @@ export const ResetPasswordPage = (): React.JSX.Element => {
         </p>
       }
       isSubmitting={isPending(status)}
-      onSubmit={(event) => void handleSubmit(event)}
+      onSubmit={handleSubmit}
       submitLabel="Сохранить"
       title="Восстановление пароля"
     >
       <PasswordInput
         icon="ShowIcon"
-        onChange={(event) => setPassword(event.target.value)}
+        name="password"
+        onChange={handleChange}
         placeholder="Введите новый пароль"
-        value={password}
+        value={values.password}
       />
       <Input
-        onChange={(event) => setToken(event.target.value)}
+        name="token"
+        onChange={handleChange}
         placeholder="Введите код из письма"
         type="text"
-        value={token}
+        value={values.token}
       />
     </AuthForm>
   );

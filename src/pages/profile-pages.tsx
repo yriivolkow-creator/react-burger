@@ -5,9 +5,10 @@ import {
   LogoutIcon,
   PasswordInput,
 } from '@krgaa/react-developer-burger-ui-components';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { useForm } from '@hooks/use-form';
 import {
   selectAuthError,
   selectAuthStatus,
@@ -67,59 +68,59 @@ export const ProfilePage = (): React.JSX.Element | null => {
   const error = useAppSelector(selectAuthError);
   const status = useAppSelector(selectAuthStatus);
   const user = useAppSelector(selectCurrentUser);
-  const [form, setForm] = useState<TProfileForm>({ email: '', name: '', password: '' });
+  const { handleChange, setValues, values } = useForm<TProfileForm>({
+    email: '',
+    name: '',
+    password: '',
+  });
 
   useEffect(() => {
     if (user) {
-      setForm({ email: user.email, name: user.name, password: '' });
+      setValues({ email: user.email, name: user.name, password: '' });
     }
-  }, [user]);
+  }, [setValues, user]);
 
   if (!user) {
     return null;
   }
 
   const isDirty =
-    form.name !== user.name || form.email !== user.email || form.password.length > 0;
+    values.name !== user.name ||
+    values.email !== user.email ||
+    values.password.length > 0;
 
-  const setField = (field: keyof TProfileForm, value: string): void => {
-    setForm((currentForm) => ({ ...currentForm, [field]: value }));
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    try {
-      await dispatch(updateCurrentUser(form)).unwrap();
-      setForm((currentForm) => ({ ...currentForm, password: '' }));
-    } catch {
-      return;
-    }
+    void dispatch(updateCurrentUser(values))
+      .unwrap()
+      .then(() => {
+        setValues((currentValues) => ({ ...currentValues, password: '' }));
+      })
+      .catch(() => undefined);
   };
 
   const handleCancel = (): void => {
-    setForm({ email: user.email, name: user.name, password: '' });
+    setValues({ email: user.email, name: user.name, password: '' });
   };
 
   return (
-    <form className="profile-form" onSubmit={(event) => void handleSubmit(event)}>
+    <form className="profile-form" onSubmit={handleSubmit}>
       <Input
         icon="EditIcon"
-        onChange={(event) => setField('name', event.target.value)}
+        name="name"
+        onChange={handleChange}
         placeholder="Имя"
         type="text"
-        value={form.name}
+        value={values.name}
       />
-      <EmailInput
-        isIcon
-        onChange={(event) => setField('email', event.target.value)}
-        value={form.email}
-      />
+      <EmailInput isIcon name="email" onChange={handleChange} value={values.email} />
       <PasswordInput
         icon="EditIcon"
-        onChange={(event) => setField('password', event.target.value)}
+        name="password"
+        onChange={handleChange}
         placeholder="Пароль"
-        value={form.password}
+        value={values.password}
       />
       {isDirty && (
         <div className="profile-form__actions">
