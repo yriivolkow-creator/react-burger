@@ -6,9 +6,11 @@ import {
 } from '@krgaa/react-developer-burger-ui-components';
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
+import { selectCurrentUser } from '@services/auth/authSlice';
 import {
   addIngredient,
   clearConstructor,
@@ -250,6 +252,9 @@ const FillingList = (): React.JSX.Element => {
 
 export const BurgerConstructor = (): React.JSX.Element => {
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const user = useAppSelector(selectCurrentUser);
   const bun = useAppSelector(selectConstructorBun);
   const totalPrice = useAppSelector(selectTotalPrice);
   const canSubmitOrder = useAppSelector(selectCanSubmitOrder);
@@ -260,9 +265,16 @@ export const BurgerConstructor = (): React.JSX.Element => {
   const isOrderPending = orderStatus === 'pending';
 
   const handleOrderSubmit = (): void => {
-    if (canSubmitOrder) {
-      void dispatch(createOrder());
+    if (!canSubmitOrder) {
+      return;
     }
+
+    if (!user) {
+      void navigate('/login', { state: { from: location } });
+      return;
+    }
+
+    void dispatch(createOrder());
   };
 
   const handleOrderModalClose = (): void => {

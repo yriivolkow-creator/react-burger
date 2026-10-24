@@ -25,7 +25,6 @@ export type TIngredientsResponse = {
 };
 
 export type TConstructorIngredient = TIngredient & {
-  /** UI instance identity; API requests continue to use the canonical `_id`. */
   id: string;
 };
 
@@ -62,4 +61,50 @@ export type TOrderState = {
   error: string | null;
   isModalOpen: boolean;
   currentRequestId: string | null;
+};
+
+export type TUser = {
+  email: string;
+  name: string;
+};
+
+export type TAuthTokens = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type TAuthResponse = TAuthTokens & {
+  success: true;
+  user: TUser;
+};
+
+export type TUserResponse = {
+  success: true;
+  user: TUser;
+};
+
+export type TRegisterRequest = {
+  email: string;
+  password: string;
+  name: string;
+};
+
+export type TLoginRequest = Pick<TRegisterRequest, 'email' | 'password'>;
+
+export type TUpdateUserRequest = TRegisterRequest;
+
+export type TPasswordResetRequest = {
+  email: string;
+};
+
+export type TPasswordResetConfirmRequest = {
+  password: string;
+  token: string;
+};
+
+export type TAuthState = {
+  user: TUser | null;
+  status: TRequestStatus;
+  error: string | null;
+  isChecked: boolean;
 };

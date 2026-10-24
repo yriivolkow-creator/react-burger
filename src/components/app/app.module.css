@@ -1,24 +1,8 @@
 .app {
   display: flex;
   flex-direction: column;
-
-  /* height: 100vh; */
-  height: 100%;
+  min-height: 100vh;
   padding-bottom: 40px;
   color: var(--text-primary-color);
   background-color: var(--background-alt);
-}
-
-.main {
-  display: flex;
-  justify-content: space-between;
-  width: 1240px;
-  height: 912px;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-.error {
-  margin: auto;
-  color: var(--colors-interface-error);
 }

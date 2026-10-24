@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
+import { selectCurrentUser } from '@services/auth/authSlice';
 import {
   selectCanSubmitOrder,
   selectOrderIngredientIds,
@@ -10,6 +11,8 @@ import type { RootState } from '@services/store';
 
 const incompleteOrderMessage =
   'Добавьте булку и хотя бы одну начинку перед оформлением заказа';
+
+const unauthenticatedOrderMessage = 'Войдите в аккаунт перед оформлением заказа';
 
 const getErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error && error.message ? error.message : fallback;
@@ -22,6 +25,11 @@ export const createOrder = createAsyncThunk<
   'order/createOrder',
   async (_, thunkAPI) => {
     const state = thunkAPI.getState();
+    const user = selectCurrentUser(state);
+
+    if (!user) {
+      return thunkAPI.rejectWithValue(unauthenticatedOrderMessage);
+    }
     const ingredients = selectOrderIngredientIds(state);
     const canSubmitOrder =
       selectCanSubmitOrder(state) || state.order.status === 'pending';

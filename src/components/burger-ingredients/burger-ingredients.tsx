@@ -1,22 +1,14 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
 import { useRef, useState } from 'react';
 import { useDrag } from 'react-dnd';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
-import { Modal } from '@components/modal/modal';
 import { selectIngredientCountsById } from '@services/burger-constructor/burgerConstructorSlice';
-import { useAppDispatch, useAppSelector } from '@services/hooks';
+import { useAppSelector } from '@services/hooks';
 import { selectAllIngredients } from '@services/ingredients/ingredientsSlice';
-import {
-  clearSelectedIngredient,
-  selectIngredient,
-  selectSelectedIngredient,
-} from '@services/selected-ingredient/selectedIngredientSlice';
 import { DND_ITEM_TYPES, type TIngredientDragItem } from '@utils/dnd';
 
 import type { TIngredient, TIngredientType } from '@utils/types';
-
-import styles from './burger-ingredients.module.css';
 
 type TIngredientGroup = {
   title: string;
@@ -28,6 +20,8 @@ type TIngredientCardProps = {
   ingredient: TIngredient;
   onClick: (ingredient: TIngredient) => void;
 };
+
+import styles from './burger-ingredients.module.css';
 
 const ingredientGroups: TIngredientGroup[] = [
   { title: 'Булки', type: 'bun' },
@@ -85,10 +79,10 @@ const IngredientCard = ({
 };
 
 export const BurgerIngredients = (): React.JSX.Element => {
-  const dispatch = useAppDispatch();
   const ingredients = useAppSelector(selectAllIngredients);
   const ingredientCountsById = useAppSelector(selectIngredientCountsById);
-  const selectedIngredient = useAppSelector(selectSelectedIngredient);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TIngredientType>('bun');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const headingRefs = useRef<Record<TIngredientType, HTMLHeadingElement | null>>({
@@ -158,11 +152,9 @@ export const BurgerIngredients = (): React.JSX.Element => {
   };
 
   const handleIngredientClick = (ingredient: TIngredient): void => {
-    dispatch(selectIngredient(ingredient));
-  };
-
-  const handleModalClose = (): void => {
-    dispatch(clearSelectedIngredient());
+    void navigate(`/ingredients/${ingredient._id}`, {
+      state: { backgroundLocation: location },
+    });
   };
 
   return (
@@ -219,12 +211,6 @@ export const BurgerIngredients = (): React.JSX.Element => {
           );
         })}
       </div>
-
-      {selectedIngredient && (
-        <Modal title="Детали ингредиента" onClose={handleModalClose}>
-          <IngredientDetails ingredient={selectedIngredient} />
-        </Modal>
-      )}
     </section>
   );
 };
