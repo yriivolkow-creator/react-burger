@@ -5,9 +5,10 @@ import {
   LogoutIcon,
   PasswordInput,
 } from '@krgaa/react-developer-burger-ui-components';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { OrderCard } from '@components/order-card/order-card';
 import { useForm } from '@hooks/use-form';
 import {
   selectAuthError,
@@ -16,8 +17,17 @@ import {
 } from '@services/auth/authSlice';
 import { logoutUser, updateCurrentUser } from '@services/auth/authThunks';
 import { useAppDispatch, useAppSelector } from '@services/hooks';
+import {
+  selectUserOrders,
+  wsConnectUserOrders,
+  wsDisconnectUserOrders,
+} from '@services/user-orders/userOrdersSlice';
+import { WS_ORDERS_USER_URL } from '@utils/constants';
+import { getAccessToken } from '@utils/token';
 
 import type { FormEvent } from 'react';
+
+import styles from './profile-orders-page.module.css';
 
 type TProfileForm = {
   email: string;
@@ -151,11 +161,56 @@ export const ProfilePage = (): React.JSX.Element | null => {
   );
 };
 
-export const ProfileOrdersPage = (): React.JSX.Element => (
-  <section className="stub-page">
-    <h1 className="text text_type_main-large">История заказов</h1>
-    <p className="text text_type_main-default text_color_inactive">
-      История заказов находится в разработке
-    </p>
-  </section>
-);
+export const ProfileOrdersPage = (): React.JSX.Element => {
+  const dispatch = useAppDispatch();
+  const orders = useAppSelector(selectUserOrders);
+  const [tokenExpired, setTokenExpired] = useState(false);
+
+  useEffect(() => {
+    const accessToken = getAccessToken();
+
+    if (accessToken) {
+      // Remove 'Bearer ' prefix if present
+      const token = accessToken.replace('Bearer ', '');
+      dispatch(wsConnectUserOrders(`${WS_ORDERS_USER_URL}?token=${token}`));
+    }
+
+    return () => {
+      dispatch(wsDisconnectUserOrders());
+    };
+  }, [dispatch, tokenExpired]);
+
+  // Listen for token expiration events
+  useEffect(() => {
+    const handleTokenExpired = (): void => {
+      setTokenExpired((prev) => !prev);
+    };
+
+    window.addEventListener('userOrdersTokenExpired', handleTokenExpired);
+    return () => {
+      window.removeEventListener('userOrdersTokenExpired', handleTokenExpired);
+    };
+  }, []);
+
+  if (orders.length === 0) {
+    return (
+      <section className={styles.page}>
+        <p className="text text_type_main-default text_color_inactive">
+          Вы ещё не сделали ни одного заказа
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className={styles.page}>
+      <ul className={`${styles.orders} custom-scroll`}>
+        {orders.map((order) => (
+          <li key={order._id}>
+            <OrderCard order={order} showStatus />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+};
