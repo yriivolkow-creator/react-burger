@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { IngredientModal } from '@components/ingredient-modal/ingredient-modal';
+import { OrderModal } from '@components/order-modal/order-modal';
 import { PasswordResetRoute } from '@components/password-reset-route/password-reset-route';
 import { ProtectedRoute } from '@components/protected-route/protected-route';
 import {
@@ -61,6 +62,14 @@ const AppRoutes = (): React.JSX.Element => {
       {backgroundLocation && (
         <Routes>
           <Route path="/ingredients/:id" element={<IngredientModal />} />
+          <Route
+            path="/feed/:number"
+            element={<OrderModal onClose={() => void navigate(-1)} />}
+          />
+          <Route
+            path="/profile/orders/:number"
+            element={<OrderModal onClose={() => void navigate(-1)} isUserOrders />}
+          />
         </Routes>
       )}
     </>
@@ -76,7 +85,6 @@ export const App = (): React.JSX.Element => {
     if (ingredientsStatus !== 'idle') {
       return;
     }
-
     void dispatch(fetchIngredients());
   }, [dispatch, ingredientsStatus]);
 
@@ -84,12 +92,10 @@ export const App = (): React.JSX.Element => {
     if (isAuthChecked) {
       return;
     }
-
     if (hasAuthTokens()) {
       void dispatch(checkUserAuth());
       return;
     }
-
     dispatch(markAuthChecked());
   }, [dispatch, isAuthChecked]);
 

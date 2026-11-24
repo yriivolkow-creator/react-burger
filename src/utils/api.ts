@@ -8,6 +8,7 @@ import type {
   TIngredient,
   TIngredientType,
   TLoginRequest,
+  TOrder,
   TPasswordResetConfirmRequest,
   TPasswordResetRequest,
   TRegisterRequest,
@@ -300,3 +301,35 @@ export const confirmPasswordReset = async (
       method: 'POST',
     })
   );
+
+export const getOrder = async (orderNumber: number): Promise<TOrder> => {
+  const result = requireSuccess(
+    await requestWithRefresh<unknown>(`/orders/${orderNumber}`),
+    'Сервер сообщил об ошибке получения заказа'
+  );
+
+  if (!isRecord(result) || !Array.isArray(result.orders)) {
+    throw new Error('Сервер вернул некорректный ответ о заказе');
+  }
+
+  const orders = result.orders as TApiRecord[];
+  const order = orders[0];
+
+  if (!isRecord(order)) {
+    throw new Error('Сервер вернул некорректный заказ');
+  }
+
+  return {
+    _id: isString(order._id) ? order._id : '',
+    createdAt: isString(order.createdAt) ? order.createdAt : '',
+    ingredients: Array.isArray(order.ingredients)
+      ? order.ingredients.filter(isString)
+      : [],
+    name: isString(order.name) ? order.name : undefined,
+    number: isFiniteNumber(order.number) ? order.number : 0,
+    status: ['created', 'pending', 'done'].includes(order.status as string)
+      ? (order.status as 'created' | 'pending' | 'done')
+      : 'pending',
+    updatedAt: isString(order.updatedAt) ? order.updatedAt : '',
+  };
+};

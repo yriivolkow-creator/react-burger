@@ -1,0 +1,16 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.orders {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 800px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}

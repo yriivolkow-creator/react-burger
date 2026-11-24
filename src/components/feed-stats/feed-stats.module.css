@@ -1,0 +1,48 @@
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.columns {
+  display: flex;
+  gap: 80px;
+}
+
+.column {
+  flex: 1;
+}
+
+.orders_grid {
+  display: flex;
+  gap: 32px;
+}
+
+.order_list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order_number_done {
+  color: #0cc;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.total_row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.glow {
+  text-shadow: 0 0 20px rgb(76 76 255 / 50%);
+}

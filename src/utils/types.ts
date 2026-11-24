@@ -108,3 +108,36 @@ export type TAuthState = {
   error: string | null;
   isChecked: boolean;
 };
+
+// Order types
+export type TOrderIngredient = string;
+
+export type TOrder = {
+  _id: string;
+  ingredients: TOrderIngredient[];
+  status: 'created' | 'pending' | 'done';
+  number: number;
+  createdAt: string;
+  updatedAt: string;
+  name?: string;
+};
+
+export type TOrdersResponse = {
+  success: boolean;
+  orders: TOrder[];
+  total: number;
+  totalToday: number;
+};
+
+export type TOrderDetailsResponse = {
+  success: boolean;
+  orders: TOrder[];
+};
+
+export type TOrdersState = {
+  orders: TOrder[];
+  total: number;
+  totalToday: number;
+  status: TRequestStatus;
+  error: string | null;
+};
