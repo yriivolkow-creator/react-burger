@@ -16,6 +16,7 @@ import { FeedPage } from '@pages/feed-page';
 import { HomePage } from '@pages/home-page';
 import { IngredientDetailsPage } from '@pages/ingredient-details-page';
 import { NotFoundPage } from '@pages/not-found-page';
+import { OrderPage } from '@pages/order-page';
 import { ProfileLayout, ProfileOrdersPage, ProfilePage } from '@pages/profile-pages';
 import { markAuthChecked, selectIsAuthChecked } from '@services/auth/authSlice';
 import { checkUserAuth } from '@services/auth/authThunks';
@@ -31,6 +32,20 @@ import styles from './app.module.css';
 type TLocationState = {
   backgroundLocation?: Location;
 };
+
+// Extract order id from pathname (e.g., /feed/6b0545308da1e6001b2ba7f7)
+function extractOrderIdFromPathname(pathname: string): string | null {
+  const parts = pathname.split('/');
+  // For /feed/:number, number is at index 2
+  // For /profile/orders/:number, number is at index 3
+  if (parts[1] === 'feed' && parts[2]) {
+    return parts[2];
+  }
+  if (parts[1] === 'profile' && parts[2] === 'orders' && parts[3]) {
+    return parts[3];
+  }
+  return null;
+}
 
 const AppRoutes = (): React.JSX.Element => {
   const location = useLocation();
@@ -57,26 +72,21 @@ const AppRoutes = (): React.JSX.Element => {
           </Route>
         </Route>
         <Route path="/feed" element={<FeedPage />} />
+        <Route path="/feed/:number" element={<OrderPage />} />
+        <Route path="/profile/orders/:number" element={<OrderPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       {backgroundLocation && (
-        <Routes>
-          <Route path="/ingredients/:id" element={<IngredientModal />} />
-          <Route
-            path="/feed/:number"
-            element={<OrderModal onClose={() => void navigate(-1)} />}
-          />
-          <Route
-            path="/profile/orders/:number"
-            element={<OrderModal onClose={() => void navigate(-1)} isUserOrders />}
-          />
-        </Routes>
+        <>
+          <IngredientModal />
+          <OrderModal number={extractOrderIdFromPathname(location.pathname)} />
+        </>
       )}
     </>
   );
 };
 
-export const App = (): React.JSX.Element => {
+const AppContent = (): React.JSX.Element => {
   const dispatch = useAppDispatch();
   const ingredientsStatus = useAppSelector(selectIngredientsStatus);
   const isAuthChecked = useAppSelector(selectIsAuthChecked);
@@ -105,6 +115,10 @@ export const App = (): React.JSX.Element => {
       <AppRoutes />
     </div>
   );
+};
+
+export const App = (): React.JSX.Element => {
+  return <AppContent />;
 };
 
 export default App;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Modal } from '@components/modal/modal';
 import { OrderInfo } from '@components/order-info/order-info';
@@ -11,33 +11,31 @@ import { getOrder } from '@utils/api';
 import type { TOrder } from '@utils/types';
 
 type TOrderModalProps = {
-  onClose: () => void;
   isUserOrders?: boolean;
   number?: string;
 };
 
 export const OrderModal = ({
-  onClose,
   isUserOrders = false,
   number: propNumber,
 }: TOrderModalProps): React.JSX.Element => {
-  const routeParams = useParams<{ number: string }>();
-  const number = propNumber ?? routeParams.number;
+  const navigate = useNavigate();
+  // number is now order _id (ObjectId)
+  const orderId = propNumber ?? null;
   const [order, setOrder] = useState<TOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const orderNumber = number ? parseInt(number, 10) : null;
-
+  // Try to get order from feed or user orders by number (for backward compatibility)
   const orderFromFeed = useAppSelector((state) =>
-    orderNumber ? selectOrderByNumber(state, orderNumber) : undefined
+    orderId ? selectOrderByNumber(state, parseInt(orderId, 10)) : undefined
   );
   const orderFromUser = useAppSelector((state) =>
-    orderNumber ? selectUserOrderByNumber(state, orderNumber) : undefined
+    orderId ? selectUserOrderByNumber(state, parseInt(orderId, 10)) : undefined
   );
 
   useEffect(() => {
-    if (!number) {
+    if (!orderId) {
       setError('Номер заказа не указан');
       setIsLoading(false);
       return;
@@ -51,10 +49,11 @@ export const OrderModal = ({
       return;
     }
 
+    // Otherwise fetch from API by order id
     const fetchOrder = async (): Promise<void> => {
       try {
         setIsLoading(true);
-        const data = await getOrder(orderNumber);
+        const data = await getOrder(orderId);
         setOrder(data);
       } catch (_error) {
         setError('Не удалось загрузить заказ');
@@ -64,10 +63,10 @@ export const OrderModal = ({
     };
 
     void fetchOrder();
-  }, [number, orderFromFeed, orderFromUser, isUserOrders]);
+  }, [orderId, orderFromFeed, orderFromUser, isUserOrders]);
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={() => void navigate(-1)}>
       <div className="p-10">
         {isLoading && <p className="text text_type_main-default">Загрузка...</p>}
         {error && (

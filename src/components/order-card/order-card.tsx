@@ -67,7 +67,7 @@ export const OrderCard = ({
     <Link
       className={styles.card}
       state={{ backgroundLocation: location }}
-      to={showStatus ? `/profile/orders/${order.number}` : `/feed/${order.number}`}
+      to={showStatus ? `/profile/orders/${order._id}` : `/feed/${order._id}`}
     >
       <header className={styles.header}>
         <span className="text text_type_digits-default">#{order.number}</span>

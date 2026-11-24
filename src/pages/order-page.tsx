@@ -18,18 +18,19 @@ export const OrderPage = (): React.JSX.Element => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // number is now order _id (ObjectId)
+  const orderId = number;
+
   // Try to get order from feed or user orders
   const orderFromFeed = useAppSelector((state) =>
-    number ? selectOrderByNumber(state, parseInt(number, 10)) : undefined
+    orderId ? selectOrderByNumber(state, parseInt(orderId, 10)) : undefined
   );
   const orderFromUser = useAppSelector((state) =>
-    number ? selectUserOrderByNumber(state, parseInt(number, 10)) : undefined
+    orderId ? selectUserOrderByNumber(state, parseInt(orderId, 10)) : undefined
   );
 
   useEffect(() => {
-    const orderNumber = number ? parseInt(number, 10) : null;
-
-    if (!orderNumber) {
+    if (!orderId) {
       setError('Номер заказа не указан');
       setIsLoading(false);
       return;
@@ -48,11 +49,11 @@ export const OrderPage = (): React.JSX.Element => {
       return;
     }
 
-    // Otherwise fetch from API
+    // Otherwise fetch from API by order id
     const fetchOrder = async (): Promise<void> => {
       try {
         setIsLoading(true);
-        const data = await getOrder(orderNumber);
+        const data = await getOrder(orderId);
         setOrder(data);
       } catch (_err) {
         setError('Не удалось загрузить заказ');
@@ -61,8 +62,8 @@ export const OrderPage = (): React.JSX.Element => {
       }
     };
 
-    fetchOrder();
-  }, [number, orderFromFeed, orderFromUser, dispatch]);
+    void fetchOrder();
+  }, [orderId, orderFromFeed, orderFromUser, dispatch]);
 
   if (isLoading) {
     return (
